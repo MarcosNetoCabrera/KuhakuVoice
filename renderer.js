@@ -176,10 +176,13 @@ function acceptScreen(call) {
     if (remoteFp(call.peerConnection) !== voiceFp) { status('ALERTA: chave da tela não bate com a da chamada. Bloqueado.'); return call.close(); }
     trusted = true;
     show(call.remoteStream);
+    stopRemoteStats?.();
+    stopRemoteStats = watchStats(call.peerConnection, 'inbound-rtp', 'remoteStats');
   });
   onEnd(call, () => {
     if (inScreenCall === call) inScreenCall = null;
     stopRemoteVu?.();
+    stopRemoteStats?.();
     $('remoteTile').classList.add('hidden');
     $('remoteScreen').srcObject = null;
   });
@@ -237,14 +240,17 @@ async function startShare() {
     sendStream.getTracks().forEach(t => t.enabled = true);
     for (const sender of pc.getSenders().filter(s => s.track?.kind === 'video')) {
       const p = sender.getParameters();
-      p.degradationPreference = hint === 'motion' ? 'maintain-framerate' : 'maintain-resolution';
+      // 'maintain-framerate' made Chrome slash resolution whenever CPU/network got tight; balanced looks far better for video.
+      p.degradationPreference = hint === 'motion' ? 'balanced' : 'maintain-resolution';
       p.encodings.forEach(enc => {
+        enc.scaleResolutionDownBy = 1;
         enc.maxBitrate = BITRATE[res] * Math.max(fps, 30) / 60;
         enc.maxFramerate = fps;
         enc.priority = enc.networkPriority = 'high';
       });
       await sender.setParameters(p).catch(e => console.warn('setParameters', e));
     }
+    stopLocalStats = watchStats(pc, 'outbound-rtp', 'localStats');
   });
   onEnd(call, stopShare);
 }
@@ -273,9 +279,40 @@ function watchLevel(track, id) {
   return () => { cancelAnimationFrame(raf); ctx.close(); meter.value = 0; };
 }
 
+// Real numbers for the video link, so "looks bad" can be traced to a cause instead of guessed.
+let stopLocalStats, stopRemoteStats;
+const LIMIT = { cpu: 'processador no limite', bandwidth: 'internet no limite', other: 'limitado' };
+function watchStats(pc, type, id) {
+  const el = $(id);
+  let lastBytes = 0, lastTs = 0;
+  const timer = setInterval(async () => {
+    const stats = await pc.getStats().catch(() => null);
+    if (!stats) return;
+    let rtp, codec, src;
+    stats.forEach(s => {
+      if (s.type === type && s.kind === 'video') rtp = s;
+      if (s.type === 'media-source' && s.kind === 'video') src = s;
+    });
+    if (!rtp) return;
+    codec = stats.get(rtp.codecId)?.mimeType?.split('/')[1];
+    const bytes = rtp.bytesSent ?? rtp.bytesReceived ?? 0;
+    const mbps = lastTs ? ((bytes - lastBytes) * 8 / ((rtp.timestamp - lastTs) / 1000) / 1e6).toFixed(1) : '…';
+    lastBytes = bytes; lastTs = rtp.timestamp;
+    const parts = [];
+    if (src?.width) parts.push(`captura ${src.width}×${src.height}`);
+    parts.push(`${rtp.frameWidth ?? '?'}×${rtp.frameHeight ?? '?'}`, `${Math.round(rtp.framesPerSecond ?? 0)} fps`, `${mbps} Mbps`);
+    if (codec) parts.push(codec);
+    if (rtp.qualityLimitationReason && rtp.qualityLimitationReason !== 'none') parts.push(LIMIT[rtp.qualityLimitationReason] ?? rtp.qualityLimitationReason);
+    el.textContent = parts.join(', ');
+  }, 2000);
+  return () => { clearInterval(timer); el.textContent = ''; };
+}
+
 function stopShare() {
   stopLocalVu?.();
   stopLocalVu = null;
+  stopLocalStats?.();
+  stopLocalStats = null;
   if (!screenStream) return;
   screenStream.getTracks().forEach(t => t.stop());
   sendStream?.getTracks().forEach(t => t.stop());

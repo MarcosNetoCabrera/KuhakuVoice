@@ -161,3 +161,5 @@ body.in-call #status { margin: 0; }
 .vu.none::after { content: attr(data-none); color: var(--kincha); }
 .check small { display: block; color: var(--nezumi); font-size: 12px; }
 .check:has(small) { align-items: flex-start; }
+.stats { color: var(--nezumi); font-size: 12px; }
+.stats:empty { display: none; }

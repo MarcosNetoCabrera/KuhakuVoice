@@ -7,7 +7,7 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; media-src 'self' blob:; connect-src https://0.peerjs.com wss://0.peerjs.com; base-uri 'none'; form-action 'none'; object-src 'none'">
 <title>KuhakuVoice</title>
 <!-- Bump ?v= on every deploy: Pages caches files for 10 min, and old JS with new HTML breaks the app. -->
-<link rel="stylesheet" href="style.css?v=5">
+<link rel="stylesheet" href="style.css?v=7">
 </head>
 <body>
 <header class="bar">
@@ -47,12 +47,14 @@
       <video id="remoteScreen" autoplay playsinline muted></video>
       <div class="tile-label">Tela do amigo
         <span class="vu" data-none="sem som">Som <meter id="remoteVu" min="0" max="1" value="0"></meter></span>
+        <span class="stats" id="remoteStats"></span>
         <label>Volume <input type="range" id="screenVol" min="0" max="1" step="0.05" value="1"></label>
       </div>
     </div>
     <div class="tile hidden" id="localTile">
       <video id="localScreen" autoplay muted playsinline></video>
       <div class="tile-label">Sua tela
+        <span class="stats" id="localStats"></span>
         <span class="vu" data-none="sem som">Som <meter id="localVu" min="0" max="1" value="0"></meter></span>
       </div>
     </div>
@@ -100,8 +102,8 @@
   </div>
 </div>
 
-<script src="peerjs.min.js?v=5"></script>
-<script src="sdp.js?v=5"></script>
-<script type="module" src="renderer.js?v=5"></script>
+<script src="peerjs.min.js?v=7"></script>
+<script src="sdp.js?v=7"></script>
+<script type="module" src="renderer.js?v=7"></script>
 </body>
 </html>
