@@ -193,15 +193,15 @@ $('pickBtn').onclick = () => { $('picker').classList.add('hidden'); startShare()
 
 async function startShare() {
   if (!verified || !voiceCall) return;
-  const res = +$('res').value, fps = +$('fps').value, hint = $('hint').value, sound = $('sysAudio').checked, noEcho = $('noEcho').checked;
+  const res = +$('res').value, fps = +$('fps').value, hint = $('hint').value, sound = $('sysAudio').checked;
   try {
     // The browser shows its own picker (screen / window / tab).
     screenStream = await navigator.mediaDevices.getDisplayMedia({
       video: { width: { ideal: WIDTH[res] }, height: { ideal: res }, frameRate: { ideal: fps, max: fps } },
       // restrictOwnAudio keeps this page's audio (the friend's voice) out of a system-audio capture.
       // It's optional because a browser may implement it by dropping all of its own audio (other tabs too).
-      // Off: plain `audio: true`, the most compatible request; extra audio constraints have made Chrome return no audio at all.
-      audio: sound ? (noEcho ? { restrictOwnAudio: true } : true) : false,
+      // Plain `audio: true`: extra audio constraints (restrictOwnAudio etc.) made Chrome return no audio at all.
+      audio: sound,
       systemAudio: sound ? 'include' : 'exclude',
       selfBrowserSurface: 'exclude',
     });
