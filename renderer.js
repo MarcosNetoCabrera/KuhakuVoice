@@ -47,11 +47,17 @@ $('callBtn').onclick = async () => {
   startVoice(peer.call(id, mic, { metadata: { type: 'voice' } }));
 };
 $('hangBtn').onclick = () => voiceCall?.close();
-$('copy').onclick = () => navigator.clipboard.writeText($('myId').textContent);
+$('copy').onclick = async () => {
+  await navigator.clipboard.writeText($('myId').textContent);
+  $('copy').textContent = 'Copiado';
+  setTimeout(() => $('copy').textContent = 'Copiar', 1500);
+};
+$('screenVol').oninput = e => $('remoteScreenAudio').volume = +e.target.value;
 $('muteBtn').onclick = () => {
   const t = mic.getAudioTracks()[0];
   t.enabled = !t.enabled;
   $('muteBtn').textContent = t.enabled ? 'Mutar' : 'Desmutar';
+  $('muteBtn').setAttribute('aria-pressed', !t.enabled);
 };
 $('verifyBtn').onclick = () => {
   verified = true;
@@ -126,6 +132,7 @@ function startVoice(call) {
 }
 
 function toggleInCall(on) {
+  document.body.classList.toggle('in-call', on);
   $('callBtn').classList.toggle('hidden', on);
   $('hangBtn').classList.toggle('hidden', !on);
   $('muteBtn').disabled = !on;
@@ -191,9 +198,16 @@ async function startShare() {
   const video = screenStream.getVideoTracks()[0];
   video.contentHint = hint;
   video.onended = stopShare;
+  const surface = video.getSettings().displaySurface;
+  if (sound && !screenStream.getAudioTracks().length) {
+    status(surface === 'window'
+      ? 'Sem som: o navegador não pega o áudio de uma janela. Para ter som, compartilhe a tela inteira ou uma aba.'
+      : 'Sem som: na janela do navegador, marque a opção de compartilhar áudio.');
+  }
   $('localScreen').srcObject = new MediaStream([video]);
   $('localTile').classList.remove('hidden');
   $('shareBtn').textContent = 'Parar compartilhamento';
+  $('shareBtn').classList.add('sharing');
 
   // Send black/silent until we've checked the other end has the verified key.
   sendStream = screenStream.clone();
@@ -235,6 +249,7 @@ function stopShare() {
   c?.close();
   $('localTile').classList.add('hidden');
   $('shareBtn').textContent = 'Compartilhar tela';
+  $('shareBtn').classList.remove('sharing');
 }
 
 function status(t) { $('status').textContent = t; }
