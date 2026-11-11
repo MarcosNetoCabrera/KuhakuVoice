@@ -200,7 +200,8 @@ async function startShare() {
       video: { width: { ideal: WIDTH[res] }, height: { ideal: res }, frameRate: { ideal: fps, max: fps } },
       // restrictOwnAudio keeps this page's audio (the friend's voice) out of a system-audio capture.
       // It's optional because a browser may implement it by dropping all of its own audio (other tabs too).
-      audio: sound ? { echoCancellation: false, noiseSuppression: false, autoGainControl: false, restrictOwnAudio: noEcho } : false,
+      // Off: plain `audio: true`, the most compatible request; extra audio constraints have made Chrome return no audio at all.
+      audio: sound ? (noEcho ? { restrictOwnAudio: true } : true) : false,
       systemAudio: sound ? 'include' : 'exclude',
       selfBrowserSurface: 'exclude',
     });
