@@ -1,0 +1,15 @@
+{
+  "name": "kuhakuvoice",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Voz + compartilhamento de tela P2P no navegador",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "devDependencies": {
+    "electron": "^39.0.0"
+  },
+  "dependencies": {
+    "peerjs": "1.5.5"
+  }
+}

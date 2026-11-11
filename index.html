@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'unsafe-inline'; img-src data:; media-src 'self' blob:; connect-src https://0.peerjs.com wss://0.peerjs.com; base-uri 'none'; form-action 'none'; object-src 'none'">
+<title>KuhakuVoice</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: "Segoe UI", sans-serif; background: #1e1f22; color: #dbdee1; display: flex; flex-direction: column; height: 100vh; }
+  header { display: flex; gap: 8px; align-items: center; padding: 10px; background: #2b2d31; flex-wrap: wrap; }
+  input, select { background: #1e1f22; color: #dbdee1; border: 1px solid #3f4147; border-radius: 4px; padding: 8px; }
+  button { background: #5865f2; color: #fff; border: 0; border-radius: 4px; padding: 8px 14px; cursor: pointer; font-weight: 600; }
+  button:hover { background: #4752c4; }
+  button.red { background: #da373c; } button.gray { background: #4e5058; }
+  button:disabled { opacity: .5; cursor: default; }
+  #myId { font-family: monospace; user-select: all; background: #1e1f22; padding: 8px; border-radius: 4px; }
+  #status { margin-left: auto; font-size: 13px; color: #949ba4; }
+  main { flex: 1; display: flex; gap: 8px; padding: 8px; min-height: 0; }
+  .tile { flex: 1; background: #000; border-radius: 8px; position: relative; min-width: 0; display: flex; }
+  .tile video { width: 100%; height: 100%; object-fit: contain; }
+  .tile span { position: absolute; left: 8px; bottom: 8px; background: #000a; padding: 2px 8px; border-radius: 4px; font-size: 12px; }
+  .hidden { display: none !important; }
+  #picker, #incoming { position: fixed; inset: 0; background: #000c; display: flex; align-items: center; justify-content: center; }
+  #picker > div, #incoming > div { background: #2b2d31; padding: 16px; border-radius: 8px; max-width: 90vw; max-height: 85vh; overflow: auto; }
+  #codeBox { background: #4e3a12; padding: 6px 10px; border-radius: 4px; }
+  #codeBox.ok { background: #1f4d2b; }
+  #code { font-family: monospace; font-size: 16px; font-weight: 700; letter-spacing: 1px; }
+  #incoming > div { text-align: center; }
+</style>
+</head>
+<body>
+<header>
+  Seu ID: <span id="myId">conectando...</span>
+  <button class="gray" id="copy">Copiar</button>
+  <input id="remoteId" placeholder="ID do amigo" size="38">
+  <button id="callBtn">Ligar</button>
+  <button class="red hidden" id="hangBtn">Desligar</button>
+  <button class="gray" id="muteBtn" disabled>Mutar</button>
+  <button id="shareBtn" disabled title="Confirme o código de segurança primeiro">Compartilhar tela</button>
+  <span id="codeBox" class="hidden">Código: <span id="code"></span>
+    <button class="gray" id="verifyBtn" title="Só clique se o seu amigo vê exatamente o mesmo código">É igual ao do amigo</button></span>
+  <span id="status"></span>
+</header>
+<main>
+  <div class="tile hidden" id="remoteTile"><video id="remoteScreen" autoplay playsinline></video><span>Tela do amigo (duplo clique = tela cheia)</span></div>
+  <div class="tile hidden" id="localTile"><video id="localScreen" autoplay muted playsinline></video><span>Sua tela</span></div>
+</main>
+<audio id="remoteAudio" autoplay></audio>
+<audio id="remoteScreenAudio" autoplay></audio>
+
+<div id="picker" class="hidden"><div>
+  <b>Compartilhar tela</b>
+  <div style="margin-top:10px">
+    Resolução <select id="res"><option value="1080">1080p</option><option value="1440">1440p</option><option value="2160">4K</option></select>
+    FPS <select id="fps"><option>60</option><option>30</option><option>144</option></select>
+    <label><input type="checkbox" id="sysAudio"> Áudio (aba ou PC)</label>
+    Modo <select id="hint"><option value="motion">Jogo / vídeo (fluidez)</option><option value="detail">Texto / código (nitidez)</option></select>
+  </div>
+  <p style="font-size:13px;color:#949ba4">O navegador vai perguntar o que compartilhar. Para áudio, marque "Compartilhar áudio" na janela dele.</p>
+  <button id="pickBtn">Escolher tela</button> <button class="gray" id="cancelPick">Cancelar</button>
+</div></div>
+
+<div id="incoming" class="hidden"><div>
+  <p><b id="callerId"></b><br>está te ligando</p>
+  <button id="acceptBtn">Atender</button> <button class="red" id="declineBtn">Recusar</button>
+</div></div>
+
+<script src="peerjs.min.js"></script>
+<script src="sdp.js"></script>
+<script type="module" src="renderer.js"></script>
+</body>
+</html>
