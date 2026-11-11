@@ -7,7 +7,7 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; media-src 'self' blob:; connect-src https://0.peerjs.com wss://0.peerjs.com; base-uri 'none'; form-action 'none'; object-src 'none'">
 <title>KuhakuVoice</title>
 <!-- Bump ?v= on every deploy: Pages caches files for 10 min, and old JS with new HTML breaks the app. -->
-<link rel="stylesheet" href="style.css?v=4">
+<link rel="stylesheet" href="style.css?v=5">
 </head>
 <body>
 <header class="bar">
@@ -46,12 +46,15 @@
     <div class="tile hidden" id="remoteTile">
       <video id="remoteScreen" autoplay playsinline muted></video>
       <div class="tile-label">Tela do amigo
+        <span class="vu" data-none="sem som">Som <meter id="remoteVu" min="0" max="1" value="0"></meter></span>
         <label>Volume <input type="range" id="screenVol" min="0" max="1" step="0.05" value="1"></label>
       </div>
     </div>
     <div class="tile hidden" id="localTile">
       <video id="localScreen" autoplay muted playsinline></video>
-      <div class="tile-label">Sua tela</div>
+      <div class="tile-label">Sua tela
+        <span class="vu" data-none="sem som">Som <meter id="localVu" min="0" max="1" value="0"></meter></span>
+      </div>
     </div>
     <p class="empty">Ninguém está compartilhando a tela.<br>Dê dois cliques na tela do amigo para ver em tela cheia.</p>
   </div>
@@ -75,6 +78,8 @@
       <label>Quadros por segundo <select id="fps"><option>60</option><option>30</option><option>144</option></select></label>
       <label class="wide">Prioridade <select id="hint"><option value="motion">Fluidez, para jogos e vídeos</option><option value="detail">Nitidez, para texto e código</option></select></label>
       <label class="check wide"><input type="checkbox" id="sysAudio" checked> Levar o som junto</label>
+      <label class="check wide"><input type="checkbox" id="noEcho" checked> Evitar eco da voz do amigo
+        <small>Desmarque se o som de abas do navegador, como o YouTube, não chegar.</small></label>
     </div>
     <div class="actions">
       <button id="cancelPick">Cancelar</button>
@@ -95,8 +100,8 @@
   </div>
 </div>
 
-<script src="peerjs.min.js?v=4"></script>
-<script src="sdp.js?v=4"></script>
-<script type="module" src="renderer.js?v=4"></script>
+<script src="peerjs.min.js?v=5"></script>
+<script src="sdp.js?v=5"></script>
+<script type="module" src="renderer.js?v=5"></script>
 </body>
 </html>

@@ -166,6 +166,8 @@ function acceptScreen(call) {
     if (!trusted || !s) return;
     $('remoteScreen').srcObject = s;
     $('remoteScreenAudio').srcObject = s;
+    stopRemoteVu?.();
+    stopRemoteVu = watchLevel(s.getAudioTracks()[0], 'remoteVu');
     $('remoteTile').classList.remove('hidden');
   };
   call.answer(undefined, { sdpTransform: preferH264 });
@@ -175,7 +177,12 @@ function acceptScreen(call) {
     trusted = true;
     show(call.remoteStream);
   });
-  onEnd(call, () => { if (inScreenCall === call) inScreenCall = null; $('remoteTile').classList.add('hidden'); $('remoteScreen').srcObject = null; });
+  onEnd(call, () => {
+    if (inScreenCall === call) inScreenCall = null;
+    stopRemoteVu?.();
+    $('remoteTile').classList.add('hidden');
+    $('remoteScreen').srcObject = null;
+  });
 }
 
 function openPicker() { $('picker').classList.remove('hidden'); }
@@ -183,13 +190,14 @@ $('pickBtn').onclick = () => { $('picker').classList.add('hidden'); startShare()
 
 async function startShare() {
   if (!verified || !voiceCall) return;
-  const res = +$('res').value, fps = +$('fps').value, hint = $('hint').value, sound = $('sysAudio').checked;
+  const res = +$('res').value, fps = +$('fps').value, hint = $('hint').value, sound = $('sysAudio').checked, noEcho = $('noEcho').checked;
   try {
     // The browser shows its own picker (screen / window / tab).
     screenStream = await navigator.mediaDevices.getDisplayMedia({
       video: { width: { ideal: WIDTH[res] }, height: { ideal: res }, frameRate: { ideal: fps, max: fps } },
-      // restrictOwnAudio keeps this page's audio (the friend's voice) out of a system-audio capture, where the browser supports it.
-      audio: sound ? { echoCancellation: false, noiseSuppression: false, autoGainControl: false, restrictOwnAudio: true } : false,
+      // restrictOwnAudio keeps this page's audio (the friend's voice) out of a system-audio capture.
+      // It's optional because a browser may implement it by dropping all of its own audio (other tabs too).
+      audio: sound ? { echoCancellation: false, noiseSuppression: false, autoGainControl: false, restrictOwnAudio: noEcho } : false,
       systemAudio: sound ? 'include' : 'exclude',
       selfBrowserSurface: 'exclude',
     });
@@ -198,6 +206,8 @@ async function startShare() {
   const video = screenStream.getVideoTracks()[0];
   video.contentHint = hint;
   video.onended = stopShare;
+  stopLocalVu?.();
+  stopLocalVu = watchLevel(screenStream.getAudioTracks()[0], 'localVu');
   const surface = video.getSettings().displaySurface;
   if (sound && !screenStream.getAudioTracks().length) {
     status(surface === 'window'
@@ -239,7 +249,33 @@ async function startShare() {
   onEnd(call, stopShare);
 }
 
+// Live level meter for a screen's audio, so you can see whether sound is actually captured / arriving.
+let stopLocalVu, stopRemoteVu;
+function watchLevel(track, id) {
+  const meter = $(id), box = meter.closest('.vu');
+  box.classList.toggle('none', !track);
+  meter.value = 0;
+  if (!track) return null;
+  const ctx = new AudioContext();
+  const an = ctx.createAnalyser();
+  an.fftSize = 512;
+  ctx.createMediaStreamSource(new MediaStream([track])).connect(an);
+  const buf = new Float32Array(an.fftSize);
+  let raf;
+  const tick = () => {
+    an.getFloatTimeDomainData(buf);
+    let peak = 0;
+    for (const v of buf) peak = Math.max(peak, Math.abs(v));
+    meter.value = Math.max(peak, meter.value * 0.85); // fall off smoothly
+    raf = requestAnimationFrame(tick);
+  };
+  ctx.resume().then(tick);
+  return () => { cancelAnimationFrame(raf); ctx.close(); meter.value = 0; };
+}
+
 function stopShare() {
+  stopLocalVu?.();
+  stopLocalVu = null;
   if (!screenStream) return;
   screenStream.getTracks().forEach(t => t.stop());
   sendStream?.getTracks().forEach(t => t.stop());

@@ -151,3 +151,13 @@ body.in-call #status { margin: 0; }
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; }
 }
+
+/* Screen audio level */
+.vu { display: inline-flex; align-items: center; gap: 6px; }
+.vu meter { width: 64px; height: 8px; }
+.vu meter::-webkit-meter-bar { background: var(--line); border: 0; border-radius: 4px; }
+.vu meter::-webkit-meter-optimum-value { background: var(--asagi); border-radius: 4px; }
+.vu.none meter { display: none; }
+.vu.none::after { content: attr(data-none); color: var(--kincha); }
+.check small { display: block; color: var(--nezumi); font-size: 12px; }
+.check:has(small) { align-items: flex-start; }
