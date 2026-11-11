@@ -55,6 +55,7 @@ $('muteBtn').onclick = () => {
 };
 $('verifyBtn').onclick = () => {
   verified = true;
+  status('Código confirmado. Você já pode compartilhar a tela (seu amigo também precisa confirmar para ver).');
   $('verifyBtn').classList.add('hidden');
   $('codeBox').classList.add('ok');
   $('shareBtn').disabled = false;
@@ -109,6 +110,7 @@ function startVoice(call) {
     if (!voiceFp) return call.close();
     $('code').textContent = await safetyCode(myFp, voiceFp);
     $('codeBox').classList.remove('hidden');
+    status('Comparem o código em voz alta. Se for igual, OS DOIS cliquem em "É igual ao do amigo" para liberar a tela.');
   });
   toggleInCall(true);
   onEnd(call, () => {
@@ -198,8 +200,16 @@ async function startShare() {
   sendStream.getTracks().forEach(t => { t.enabled = false; t.contentHint = t.kind === 'video' ? hint : t.contentHint; });
   const call = outScreenCall = peer.call(voiceCall.peer, sendStream, { metadata: { type: 'screen' }, sdpTransform: preferH264 });
   const pc = call.peerConnection;
+  // The friend's app silently refuses screens until they confirm the code, so don't wait forever.
+  const refusedTimer = setTimeout(() => {
+    if (outScreenCall !== call || pc.connectionState === 'connected') return;
+    status('A tela não foi aceita: seu amigo precisa clicar em "É igual ao do amigo" e depois você compartilha de novo.');
+    stopShare();
+  }, 15000);
   onConnected(pc, async () => {
+    clearTimeout(refusedTimer);
     if (remoteFp(pc) !== voiceFp) { status('ALERTA: chave da tela não bate com a da chamada. Bloqueado.'); return stopShare(); }
+    status('Compartilhando sua tela.');
     sendStream.getTracks().forEach(t => t.enabled = true);
     for (const sender of pc.getSenders().filter(s => s.track?.kind === 'video')) {
       const p = sender.getParameters();
