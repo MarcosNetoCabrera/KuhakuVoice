@@ -1,0 +1,16 @@
+:root { --kachi: #1A1D2B; --kon: #23283B; --line: #343A52; --gofun: #ECE6D8; --nezumi: #9A9FB3; --asagi: #4FA3A5; }
+* { box-sizing: border-box; }
+body { margin: 0; padding: 20px 24px; background: var(--kachi); color: var(--gofun); font: 14px/1.5 "Segoe UI", system-ui, sans-serif; }
+h1 { font: 600 22px/1.2 "Yu Mincho", Georgia, serif; margin: 0 0 4px; }
+h2 { font-size: 13px; font-weight: 600; color: var(--nezumi); margin: 20px 0 8px; }
+p { color: var(--nezumi); margin: 0; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+.grid:empty::after { content: "Nada para mostrar"; color: var(--nezumi); }
+.source { background: var(--kon); border: 2px solid transparent; border-radius: 10px; padding: 8px; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.source:hover { border-color: var(--line); }
+.source:focus-visible { outline: none; border-color: var(--asagi); }
+.source img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: contain; background: #000; border-radius: 6px; margin-bottom: 6px; }
+.source span { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 13px; }
+footer { margin-top: 20px; display: flex; justify-content: flex-end; }
+#cancel { background: var(--kon); color: inherit; border: 0; border-radius: 10px; padding: 10px 18px; font: inherit; font-weight: 600; cursor: pointer; }
+#cancel:hover { background: var(--line); }

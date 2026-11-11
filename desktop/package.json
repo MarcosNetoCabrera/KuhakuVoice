@@ -1,0 +1,29 @@
+{
+  "name": "kuhakuvoice-desktop",
+  "version": "1.0.0",
+  "private": true,
+  "description": "KuhakuVoice para PC: tela inteira com som do PC",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win portable"
+  },
+  "build": {
+    "appId": "local.kuhakuvoice",
+    "productName": "KuhakuVoice",
+    "directories": { "output": "release" },
+    "electronFuses": {
+      "runAsNode": false,
+      "enableNodeOptionsEnvironmentVariable": false,
+      "enableNodeCliInspectArguments": false,
+      "enableEmbeddedAsarIntegrityValidation": true,
+      "onlyLoadAppFromAsar": true,
+      "enableCookieEncryption": true
+    },
+    "files": ["main.js", "picker-preload.js", "picker.html", "picker.js", "picker.css"]
+  },
+  "devDependencies": {
+    "electron": "^39.0.0",
+    "electron-builder": "^26.0.0"
+  }
+}
