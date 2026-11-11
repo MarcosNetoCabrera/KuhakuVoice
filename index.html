@@ -6,7 +6,8 @@
 <meta name="referrer" content="no-referrer">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; font-src 'self'; img-src 'self' data:; media-src 'self' blob:; connect-src https://0.peerjs.com wss://0.peerjs.com; base-uri 'none'; form-action 'none'; object-src 'none'">
 <title>KuhakuVoice</title>
-<link rel="stylesheet" href="style.css">
+<!-- Bump ?v= on every deploy: Pages caches files for 10 min, and old JS with new HTML breaks the app. -->
+<link rel="stylesheet" href="style.css?v=4">
 </head>
 <body>
 <header class="bar">
@@ -94,8 +95,8 @@
   </div>
 </div>
 
-<script src="peerjs.min.js"></script>
-<script src="sdp.js"></script>
-<script type="module" src="renderer.js"></script>
+<script src="peerjs.min.js?v=4"></script>
+<script src="sdp.js?v=4"></script>
+<script type="module" src="renderer.js?v=4"></script>
 </body>
 </html>
