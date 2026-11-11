@@ -64,9 +64,14 @@ $('verifyBtn').onclick = () => {
   status('Código confirmado. Você já pode compartilhar a tela (seu amigo também precisa confirmar para ver).');
   $('verifyBtn').classList.add('hidden');
   $('codeBox').classList.add('ok');
-  $('shareBtn').disabled = false;
+  $('shareBtn').removeAttribute('aria-disabled');
 };
-$('shareBtn').onclick = () => screenStream ? stopShare() : openPicker();
+// Never truly disabled: a dead button gave no clue why nothing happened.
+$('shareBtn').onclick = () => {
+  if (screenStream) return stopShare();
+  if (!verified) return status('Para compartilhar, primeiro os dois leem o código em voz alta e clicam em "É igual ao do amigo".');
+  openPicker();
+};
 $('cancelPick').onclick = () => $('picker').classList.add('hidden');
 $('remoteScreen').ondblclick = e => document.fullscreenElement ? document.exitFullscreen() : e.target.requestFullscreen();
 
@@ -136,7 +141,7 @@ function toggleInCall(on) {
   $('callBtn').classList.toggle('hidden', on);
   $('hangBtn').classList.toggle('hidden', !on);
   $('muteBtn').disabled = !on;
-  $('shareBtn').disabled = true; // only after the safety code is confirmed
+  $('shareBtn').setAttribute('aria-disabled', 'true'); // until the safety code is confirmed
   $('codeBox').classList.add('hidden');
   $('codeBox').classList.remove('ok');
   $('verifyBtn').classList.remove('hidden');
