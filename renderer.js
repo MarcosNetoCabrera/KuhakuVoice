@@ -213,9 +213,13 @@ async function startShare() {
   stopLocalVu = watchLevel(screenStream.getAudioTracks()[0], 'localVu');
   const surface = video.getSettings().displaySurface;
   if (sound && !screenStream.getAudioTracks().length) {
-    status(surface === 'window'
-      ? 'Sem som: o navegador não pega o áudio de uma janela. Para ter som, compartilhe a tela inteira ou uma aba.'
-      : 'Sem som: na janela do navegador, marque a opção de compartilhar áudio.');
+    status(/Firefox\//.test(navigator.userAgent)
+      ? 'Sem som: o Firefox não envia som de tela. Abra o KuhakuVoice no Chrome ou no Edge (o vídeo pode continuar no Firefox).'
+      : surface === 'window'
+      ? 'Sem som: o navegador não pega o áudio de uma janela. Compartilhe a tela inteira ou uma aba.'
+      : surface === 'monitor'
+      ? 'Sem som: na janela de escolha, ligue a chave "Compartilhar também o áudio do sistema" (embaixo, à esquerda). Ela vem desligada.'
+      : 'Sem som: na janela de escolha, ligue a chave "Compartilhar também o áudio da guia".');
   }
   $('localScreen').srcObject = new MediaStream([video]);
   $('localTile').classList.remove('hidden');
