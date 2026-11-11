@@ -197,10 +197,8 @@ async function startShare() {
   try {
     // The browser shows its own picker (screen / window / tab).
     screenStream = await navigator.mediaDevices.getDisplayMedia({
-      video: { width: { ideal: WIDTH[res] }, height: { ideal: res }, frameRate: { ideal: fps, max: fps } },
-      // restrictOwnAudio keeps this page's audio (the friend's voice) out of a system-audio capture.
-      // It's optional because a browser may implement it by dropping all of its own audio (other tabs too).
-      // Plain `audio: true`: extra audio constraints (restrictOwnAudio etc.) made Chrome return no audio at all.
+      // max, not ideal: with ideal, Chrome stretched smaller windows up to 1920×1080 and they came out blurry.
+      video: { width: { max: WIDTH[res] }, height: { max: res }, frameRate: { ideal: fps, max: fps } },
       audio: sound,
       systemAudio: sound ? 'include' : 'exclude',
       selfBrowserSurface: 'exclude',
